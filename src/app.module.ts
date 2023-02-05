@@ -1,3 +1,4 @@
+import { UserModule } from "./user/user.module";
 import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
@@ -19,8 +20,11 @@ import { ConfigModule } from "@nestjs/config";
       autoLoadEntities: true,
       useNewUrlParser: true,
       entities: [join(__dirname, "**/**.entity{.ts,.js}")],
+      useUnifiedTopology: true,
+      synchronize: true,
     }),
     SensorsModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
