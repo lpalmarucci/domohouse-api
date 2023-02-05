@@ -1,24 +1,23 @@
-import { CreateSensorDto } from './dto/CreateSensor.dto';
-import { ISensor } from './models/sensor';
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { SensorsService } from './sensors.service';
+import { CreateSensorDto } from "./dto/CreateSensor.dto";
+import { Body, Controller, Get, Post, Query } from "@nestjs/common";
+import { SensorsService } from "./sensors.service";
 
-@Controller('sensors')
+@Controller("sensors")
 export class SensorsController {
-	constructor(private sensorsService: SensorsService) {}
+  constructor(private sensorsService: SensorsService) {}
 
-	@Get()
-	getAllSensors() {
-		return this.sensorsService.getAll();
-	}
+  @Get()
+  getAllSensors() {
+    return this.sensorsService.getAll();
+  }
 
-	@Get('/:sensorId')
-	getSensorById(@Query('sensorId') sensorId: string) {
-		return this.sensorsService.getById(sensorId);
-	}
+  @Get("/:sensorId")
+  getSensorById(@Query("sensorId") sensorId: string) {
+    return this.sensorsService.getById(sensorId);
+  }
 
-	@Post('/add')
-	addSensor(@Body() createSensorDto: CreateSensorDto) {
-		return this.sensorsService.add(createSensorDto);
-	}
+  @Post("/add")
+  addSensor(@Body() createSensorDto: CreateSensorDto) {
+    return this.sensorsService.add(createSensorDto);
+  }
 }
