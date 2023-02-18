@@ -5,12 +5,13 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "./dto/User.entity";
-import { ObjectID, Repository } from "typeorm";
-import { Observable, from } from "rxjs";
-import { CreateUserDto } from "./dto/CreateUserDto";
+import { User } from "./User.entity";
+import { DeleteResult, Repository, UpdateResult } from "typeorm";
+import { from, Observable } from "rxjs";
+import { CreateUserDto } from "./dto/CreateUser.dto";
 import { ConfigService } from "@nestjs/config";
 import * as bcrypt from "bcrypt";
+import { UpdateUserDto } from "./dto/UpdateUser.dto";
 
 @Injectable()
 export class UserService {
@@ -19,14 +20,19 @@ export class UserService {
     private configService: ConfigService
   ) {}
 
-  findAll(): Observable<User[]> {
-    return from(this.userRepository.find());
+  findAll(): Observable<Omit<User, "password">[]> {
+    return from(
+      this.userRepository.find({
+        select: ["userId", "firstname", "lastname", "username", "created_at"],
+      })
+    );
   }
 
-  async findById(userId: string) {
+  async findById(userId: string): Promise<Omit<User, "password">> {
     const user: User = await this.userRepository.findOne({
+      select: ["userId", "firstname", "lastname", "username", "created_at"],
       where: {
-        id: userId,
+        userId,
       },
     });
     if (!user) {
@@ -36,15 +42,16 @@ export class UserService {
     return user;
   }
 
-  async createUser(userDto: CreateUserDto): Promise<any> {
+  async createUser(userDto: CreateUserDto): Promise<User> {
     const saltOrRounds: number = +this.configService.get("SALT_OR_ROUNDS");
     const password: string = await bcrypt.hash(userDto.password, saltOrRounds);
-    const newUser = {
-      id: randomUUID(),
-      username: userDto.username.trim(),
+    const newUser: User = {
+      ...userDto,
+      userId: randomUUID(),
       password,
       created_at: new Date(),
     };
+
     // const userCreated = this.userRepository.create(newUser);
     await this.userRepository.insert(newUser).catch((e) => {
       if (e.code === 11000)
@@ -53,9 +60,23 @@ export class UserService {
         );
     });
 
-    return {
-      created: true,
-      timestamp: newUser.created_at.getTime(),
-    };
+    // TODO
+    // Return access token
+
+    delete newUser.password;
+    return newUser;
+  }
+
+  async updateUser(
+    userId: string,
+    userDto: UpdateUserDto
+  ): Promise<UpdateResult> {
+    return await this.userRepository.update({ userId }, userDto);
+  }
+
+  async deleteUser(userId: string): Promise<Omit<DeleteResult, "raw">> {
+    const result: DeleteResult = await this.userRepository.delete({ userId });
+    delete result.raw;
+    return result;
   }
 }
