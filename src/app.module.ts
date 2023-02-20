@@ -6,6 +6,7 @@ import { SensorsModule } from "./sensors/sensors.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { join } from "path";
 import { ConfigModule } from "@nestjs/config";
+import { AuthenticationModule } from "./authentication/authentication.module";
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ConfigModule } from "@nestjs/config";
     }),
     SensorsModule,
     UserModule,
+    AuthenticationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

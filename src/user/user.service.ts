@@ -42,6 +42,14 @@ export class UserService {
     return user;
   }
 
+  async findByUsername(username: string): Promise<User> {
+    return this.userRepository.findOne({
+      where: {
+        username: username,
+      },
+    });
+  }
+
   async createUser(userDto: CreateUserDto): Promise<User> {
     const saltOrRounds: number = +this.configService.get("SALT_OR_ROUNDS");
     const password: string = await bcrypt.hash(userDto.password, saltOrRounds);
