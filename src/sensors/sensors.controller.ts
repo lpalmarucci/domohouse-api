@@ -1,10 +1,13 @@
 import { CreateSensorDto } from "./dto/CreateSensor.dto";
 import { Body, Controller, Get, Post, Query } from "@nestjs/common";
 import { SensorsService } from "./sensors.service";
+import { BaseController } from "../shared/BaseController";
 
 @Controller("sensors")
-export class SensorsController {
-  constructor(private sensorsService: SensorsService) {}
+export class SensorsController extends BaseController {
+  constructor(private sensorsService: SensorsService) {
+    super();
+  }
 
   @Get()
   getAllSensors() {
