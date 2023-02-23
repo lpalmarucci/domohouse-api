@@ -1,22 +1,33 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Exclude } from "class-transformer";
+import { randomUUID } from "crypto";
 
 @Entity({ name: "users" })
 export class User {
-  @PrimaryColumn()
-  userId: string;
+  @PrimaryGeneratedColumn()
+  userId: string = randomUUID();
 
-  @Column()
+  @Column({ type: "varchar" })
   firstname: string;
 
-  @Column()
+  @Column({ type: "varchar" })
   lastname: string;
 
   @Column({ unique: true })
   username: string;
 
   @Column()
+  @Exclude()
   password: string;
 
-  @Column({ default: new Date() })
-  created_at: Date;
+  @Column({ type: "timestamp" })
+  created_at: number = new Date().getTime();
+
+  @Column({ type: "varchar" })
+  @Exclude()
+  token = "";
+
+  constructor(partial: Partial<User>) {
+    Object.assign(this, partial);
+  }
 }

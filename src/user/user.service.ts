@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import {
   BadRequestException,
   Injectable,
@@ -7,7 +6,6 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "./User.entity";
 import { DeleteResult, Repository, UpdateResult } from "typeorm";
-import { from, Observable } from "rxjs";
 import { CreateUserDto } from "./dto/CreateUser.dto";
 import { ConfigService } from "@nestjs/config";
 import * as bcrypt from "bcrypt";
@@ -20,12 +18,10 @@ export class UserService {
     private configService: ConfigService
   ) {}
 
-  findAll(): Observable<Omit<User, "password">[]> {
-    return from(
-      this.userRepository.find({
-        select: ["userId", "firstname", "lastname", "username", "created_at"],
-      })
-    );
+  findAll(): Promise<Omit<User, "password">[]> {
+    return this.userRepository.find({
+      select: ["userId", "firstname", "lastname", "username", "created_at"],
+    });
   }
 
   async findById(userId: string): Promise<Omit<User, "password">> {
@@ -38,7 +34,6 @@ export class UserService {
     if (!user) {
       throw new NotFoundException();
     }
-    delete user.password;
     return user;
   }
 
@@ -50,36 +45,32 @@ export class UserService {
     });
   }
 
-  async createUser(userDto: CreateUserDto): Promise<User> {
+  async createUser(userDto: CreateUserDto): Promise<CreateUserDto> {
     const saltOrRounds: number = +this.configService.get("SALT_OR_ROUNDS");
     const password: string = await bcrypt.hash(userDto.password, saltOrRounds);
-    const newUser: User = {
-      ...userDto,
-      userId: randomUUID(),
-      password,
-      created_at: new Date(),
-    };
 
-    // const userCreated = this.userRepository.create(newUser);
-    await this.userRepository.insert(newUser).catch((e) => {
-      if (e.code === 11000)
-        throw new BadRequestException(
-          Object.keys(e.keyValue)[0] + " already taken"
-        );
+    const newUser: User = this.userRepository.create({
+      ...userDto,
+      password,
     });
 
-    // TODO
-    // Return access token
+    await this.userRepository.insert(newUser).catch((e) => {
+      if (e.code === 11000)
+        throw new BadRequestException("Username already taken");
+    });
 
-    delete newUser.password;
     return newUser;
   }
 
   async updateUser(
     userId: string,
     userDto: UpdateUserDto
-  ): Promise<UpdateResult> {
-    return await this.userRepository.update({ userId }, userDto);
+  ): Promise<{ affected: number }> {
+    const { affected }: UpdateResult = await this.userRepository.update(
+      { userId },
+      userDto
+    );
+    return { affected };
   }
 
   async deleteUser(userId: string): Promise<Omit<DeleteResult, "raw">> {
