@@ -31,4 +31,8 @@ export class AuthenticationService {
       access_token: this.jwtService.sign(payload),
     };
   }
+  async validateRequestTokenByUser(userId: string, token: string) {
+    const user = await this.userService.findById(userId);
+    return user.token == token;
+  }
 }
