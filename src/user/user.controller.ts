@@ -9,17 +9,17 @@ import {
   Param,
   Patch,
   Post,
-  UseGuards,
   UsePipes,
   ValidationPipe,
 } from "@nestjs/common";
 import { UpdateUserDto } from "./dto/UpdateUser.dto";
-import { JwtAuthGuard } from "../authentication/guard/JwtAuth.guard";
+import { BaseController } from "../shared/BaseController";
 
-@UseGuards(JwtAuthGuard)
 @Controller("users")
-export class UserController {
-  constructor(private readonly userService: UserService) {}
+export class UserController extends BaseController {
+  constructor(private readonly userService: UserService) {
+    super();
+  }
 
   @Get()
   findAll() {
@@ -44,7 +44,8 @@ export class UserController {
   @UsePipes(
     new ValidationPipe({
       transform: true,
-      skipMissingProperties: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
     })
   )
   updateUser(@Param("id") userId: string, @Body() userDto: UpdateUserDto) {
