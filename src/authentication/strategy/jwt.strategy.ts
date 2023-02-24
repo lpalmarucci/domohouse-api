@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const token = req.headers["authorization"].split(" ").at(1);
     const sameToken = await this.authService.validateRequestTokenByUser(payload.sub, token);
     if(!sameToken)
-      return done(new UnauthorizedException("Another token is associated with the current user"))
+      return done(new UnauthorizedException())
     return done(null, { userId: payload.sub, username: payload.username });
   }
 }

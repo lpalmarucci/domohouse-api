@@ -23,9 +23,9 @@ export class User {
   @Column({ type: "timestamp" })
   created_at: number = new Date().getTime();
 
-  @Column({ type: "varchar" })
+  @Column({ type: "varchar", default: null })
   @Exclude()
-  token = "";
+  token: string | null = null;
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);

@@ -26,7 +26,6 @@ export class UserService {
 
   async findById(userId: string): Promise<Omit<User, "password">> {
     const user: User = await this.userRepository.findOne({
-      select: ["userId", "firstname", "lastname", "username", "created_at"],
       where: {
         userId,
       },
@@ -65,7 +64,7 @@ export class UserService {
   async updateUser(
     userId: string,
     userDto: UpdateUserDto
-  ): Promise<{ affected: number }> {
+  ): Promise<{affected: UpdateResult['affected']}> {
     const { affected }: UpdateResult = await this.userRepository.update(
       { userId },
       userDto

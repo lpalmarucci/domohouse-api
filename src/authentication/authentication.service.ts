@@ -1,19 +1,25 @@
 import { Injectable } from "@nestjs/common";
 import { User } from "../user/User.entity";
-import { LoginDto } from "./dto/Login.dto";
 import * as bcrypt from "bcrypt";
 import { UserService } from "../user/user.service";
 import { JwtService } from "@nestjs/jwt";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, UpdateResult } from "typeorm";
+import { LoginDto } from "./dto/Login.dto";
 
 @Injectable()
 export class AuthenticationService {
   constructor(
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
     private userService: UserService,
     private jwtService: JwtService
   ) {}
 
-  async login(loginDto: LoginDto): Promise<{ access_token: string }> {
-    return await this.generateToken(loginDto as User);
+  async login(user: User): Promise<{ access_token: string }> {
+    const { access_token } = await this.generateToken(user);
+
+    await this.userRepository.update({userId: user.userId}, {token: access_token})
+    return { access_token }
   }
 
   async validateUser(username: string, password: string): Promise<User> {
@@ -31,6 +37,12 @@ export class AuthenticationService {
       access_token: this.jwtService.sign(payload),
     };
   }
+
+  async logout(user: User): Promise<{affected: number}> {
+    const { affected }: UpdateResult = await this.userRepository.update({userId: user.userId}, {token: null})
+    return { affected }
+  }
+
   async validateRequestTokenByUser(userId: string, token: string) {
     const user = await this.userService.findById(userId);
     return user.token == token;

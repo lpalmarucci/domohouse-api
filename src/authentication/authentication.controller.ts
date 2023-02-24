@@ -1,5 +1,7 @@
+import { JwtAuthGuard } from "./guard/JwtAuth.guard";
 import {
   Controller,
+  Get,
   Post,
   Request,
   UseGuards,
@@ -18,5 +20,11 @@ export class AuthenticationController {
   @UsePipes(new ValidationPipe({ transform: true }))
   login(@Request() req) {
     return this.authService.login(req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get("/logout")
+  logout(@Request() req) {
+    return this.authService.logout(req.user);
   }
 }
